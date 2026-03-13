@@ -1,18 +1,11 @@
-require("dotenv").config();
-
 const express = require("express");
-const cors = require("cors");
-const path = require("path");
 const { Pool } = require("pg");
+const path = require("path");
 
 const app = express();
 
-// Middleware
-app.use(cors());
 app.use(express.json());
-
-// Serve frontend files
-app.use(express.static(path.join(__dirname, "frontend")));
+app.use(express.urlencoded({ extended: true }));
 
 // PostgreSQL connection
 const pool = new Pool({
@@ -22,14 +15,16 @@ const pool = new Pool({
   }
 });
 
-// Homepage route
+// Serve frontend files
+app.use(express.static(path.join(__dirname, "frontend")));
+
+// Homepage
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
-// Contact form API
+// Contact API
 app.post("/contact", async (req, res) => {
-
   const { name, email, message } = req.body;
 
   if (!name || !email || !message) {
@@ -37,7 +32,6 @@ app.post("/contact", async (req, res) => {
   }
 
   try {
-
     const query = `
       INSERT INTO messages (name, email, message)
       VALUES ($1, $2, $3)
@@ -46,14 +40,10 @@ app.post("/contact", async (req, res) => {
     await pool.query(query, [name, email, message]);
 
     res.send("Message saved successfully");
-
   } catch (error) {
-
     console.error("Database error:", error);
     res.status(500).send("Error saving message");
-
   }
-
 });
 
 // Start server
