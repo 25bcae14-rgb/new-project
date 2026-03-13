@@ -2,6 +2,7 @@ require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const { Pool } = require("pg");
 
 const app = express();
@@ -9,9 +10,11 @@ const app = express();
 // Middleware
 app.use(cors());
 app.use(express.json());
-app.use(express.static("public"));
 
-// PostgreSQL connection (Render database)
+// Serve frontend files
+app.use(express.static(path.join(__dirname, "frontend")));
+
+// PostgreSQL connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: {
@@ -19,9 +22,9 @@ const pool = new Pool({
   }
 });
 
-// Test route
+// Homepage route
 app.get("/", (req, res) => {
-  res.send("Portfolio backend running 🚀");
+  res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
 // Contact form API
