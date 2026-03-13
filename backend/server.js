@@ -11,6 +11,7 @@ app.use(express.static("../frontend."));
 
 const db = mysql.createConnection({
   host: "localhost",
+
   user: "root",
   password: "Babar@120765",
   database: "portfolio"
@@ -45,7 +46,7 @@ app.post("/contact",(req,res)=>{
   });
 
 });
-
+const PORT = process.env.PORT || 3000;
 app.listen(3000,()=>{
-  console.log("Server running on port 3000");
+  console.log('Server running on port ${PORT}');
 });
