@@ -1,52 +1,61 @@
+require("dotenv").config();
+
 const express = require("express");
 const mysql = require("mysql2");
-const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const app = express();
 
+// middleware
 app.use(cors());
-app.use(bodyParser.json());
-app.use(express.static("../frontend."));
+app.use(express.json());
+app.use(express.static("public")); // serves frontend files
 
+// MySQL connection (Render database)
 const db = mysql.createConnection({
-  host: "localhost",
-
-  user: "root",
-  password: "Babar@120765",
-  database: "portfolio"
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  port: process.env.DB_PORT
 });
 
-db.connect(err => {
-  if(err){
-    console.log("Database error");
+// connect to database
+db.connect((err) => {
+  if (err) {
+    console.error("Database connection failed:", err);
   } else {
-    console.log("MySQL connected");
+    console.log("MySQL connected successfully");
   }
 });
 
-app.post("/contact",(req,res)=>{
+// contact form API
+app.post("/contact", (req, res) => {
 
-  const {name,email,message} = req.body;
+  const { name, email, message } = req.body;
 
-  console.log("Received message:", {name, email, message});
+  if (!name || !email || !message) {
+    return res.status(400).send("All fields are required");
+  }
 
-  const sql = "INSERT INTO messages (name,email,message) VALUES (?,?,?)";
+  const sql = "INSERT INTO messages (name, email, message) VALUES (?, ?, ?)";
 
-  db.query(sql,[name,email,message],(err,result)=>{
+  db.query(sql, [name, email, message], (err, result) => {
 
-    if(err){
-      console.error("Error inserting message:", err);
-      res.status(500).send("Error saving message");
-    }else{
-      console.log("Message inserted successfully, ID:", result.insertId);
-      res.send("Message saved successfully");
+    if (err) {
+      console.error("Database error:", err);
+      return res.status(500).send("Error saving message");
     }
+
+    res.send("Message saved successfully");
 
   });
 
 });
+
+// server port
 const PORT = process.env.PORT || 3000;
-app.listen(3000,()=>{
-  console.log('Server running on port ${PORT}');
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
