@@ -10,18 +10,19 @@ app.use(express.urlencoded({ extended: true }));
 // PostgreSQL connection
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: { rejectUnauthorized: false }
 });
+
 
 // Serve frontend files
 app.use(express.static(path.join(__dirname, "frontend")));
 
-// Homepage
+
+// Homepage route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
+
 
 // Contact API
 app.post("/contact", async (req, res) => {
@@ -32,19 +33,18 @@ app.post("/contact", async (req, res) => {
   }
 
   try {
-    const query = `
-      INSERT INTO messages (name, email, message)
-      VALUES ($1, $2, $3)
-    `;
-
-    await pool.query(query, [name, email, message]);
+    await pool.query(
+      "INSERT INTO messages (name, email, message) VALUES ($1, $2, $3)",
+      [name, email, message]
+    );
 
     res.send("Message saved successfully");
   } catch (error) {
-    console.error("Database error:", error);
-    res.status(500).send("Error saving message");
+    console.error(error);
+    res.status(500).send("Database error");
   }
 });
+
 
 // Start server
 const PORT = process.env.PORT || 3000;
