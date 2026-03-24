@@ -1,5 +1,5 @@
 const express = require("express");
-const { Pool } = require("");
+const { Pool } = require("pg");
 const path = require("path");
 const fs = require("fs").promises;
 
